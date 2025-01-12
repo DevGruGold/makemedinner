@@ -41,9 +41,18 @@ export const VideoUpload = ({ onVideoSelect }: VideoUploadProps) => {
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const constraints = {
+        video: {
+          facingMode: "environment", // This requests the rear camera
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        videoRef.current.play(); // Ensure video starts playing
       }
       
       const mediaRecorder = new MediaRecorder(stream);
@@ -73,6 +82,7 @@ export const VideoUpload = ({ onVideoSelect }: VideoUploadProps) => {
       mediaRecorder.start();
       setIsRecording(true);
     } catch (error) {
+      console.error('Camera error:', error);
       toast({
         title: "Camera Error",
         description: "Unable to access camera. Please check permissions.",
@@ -129,8 +139,8 @@ export const VideoUpload = ({ onVideoSelect }: VideoUploadProps) => {
               <video
                 ref={videoRef}
                 autoPlay
-                muted
                 playsInline
+                muted
                 className="w-full rounded-lg"
               />
             </div>
