@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { VideoUpload } from "@/components/VideoUpload";
 import { RecipeDisplay } from "@/components/RecipeDisplay";
+import { DonateButton } from "@/components/DonateButton";
 import { useToast } from "@/hooks/use-toast";
 
 interface Recipe {
@@ -90,9 +91,12 @@ const Index = () => {
       <div className="container max-w-4xl mx-auto px-4">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Make Me Dinner</h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-gray-600 mb-4">
             Upload a video of your ingredients and let AI suggest meals and drinks!
           </p>
+          <div className="flex justify-center mb-4">
+            <DonateButton />
+          </div>
         </div>
 
         <div className="space-y-8">
