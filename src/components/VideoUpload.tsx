@@ -11,6 +11,7 @@ interface VideoUploadProps {
 export const VideoUpload = ({ onVideoSelect }: VideoUploadProps) => {
   const [preview, setPreview] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -39,21 +40,44 @@ export const VideoUpload = ({ onVideoSelect }: VideoUploadProps) => {
     maxFiles: 1,
   });
 
-  const startRecording = async () => {
+  const startCamera = async () => {
     try {
       const constraints = {
         video: {
-          facingMode: "environment", // This requests the rear camera
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
+          facingMode: "environment", // Rear camera
+          width: { ideal: 1920, max: 1920 },
+          height: { ideal: 1080, max: 1080 }
+        },
+        audio: true
       };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play(); // Ensure video starts playing
+        videoRef.current.play();
       }
+      setShowCamera(true);
+    } catch (error) {
+      console.error('Camera error:', error);
+      toast({
+        title: "Camera Error",
+        description: "Unable to access camera. Please check permissions.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      if (!showCamera) {
+        await startCamera();
+      }
+      
+      if (!videoRef.current?.srcObject) {
+        throw new Error('Camera not available');
+      }
+
+      const stream = videoRef.current.srcObject as MediaStream;
       
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
@@ -76,16 +100,17 @@ export const VideoUpload = ({ onVideoSelect }: VideoUploadProps) => {
         if (videoRef.current?.srcObject) {
           const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
           tracks.forEach(track => track.stop());
+          setShowCamera(false);
         }
       };
 
       mediaRecorder.start();
       setIsRecording(true);
     } catch (error) {
-      console.error('Camera error:', error);
+      console.error('Recording error:', error);
       toast({
-        title: "Camera Error",
-        description: "Unable to access camera. Please check permissions.",
+        title: "Recording Error",
+        description: "Unable to start recording. Please try again.",
         variant: "destructive",
       });
     }
@@ -100,9 +125,14 @@ export const VideoUpload = ({ onVideoSelect }: VideoUploadProps) => {
 
   const clearPreview = () => {
     setPreview(null);
+    stopCamera();
+  };
+
+  const stopCamera = () => {
     if (videoRef.current?.srcObject) {
       const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
       tracks.forEach(track => track.stop());
+      setShowCamera(false);
     }
   };
 
@@ -110,53 +140,94 @@ export const VideoUpload = ({ onVideoSelect }: VideoUploadProps) => {
     <div className="w-full max-w-2xl mx-auto space-y-4">
       {!preview ? (
         <>
-          <div
-            {...getRootProps()}
-            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-              ${isDragActive ? "border-sage-500 bg-sage-50" : "border-gray-300 hover:border-sage-400"}`}
-          >
-            <input {...getInputProps()} />
-            <Upload className="mx-auto h-12 w-12 text-gray-400" />
-            <p className="mt-2 text-sm text-gray-600">
-              {isDragActive
-                ? "Drop your video here..."
-                : "Drag and drop a video, or click to select"}
-            </p>
-          </div>
-          
-          <div className="text-center">
-            <Button
-              onClick={isRecording ? stopRecording : startRecording}
-              className={`${isRecording ? "bg-terracotta-500" : "bg-sage-500"} hover:bg-sage-600`}
+          {!showCamera ? (
+            <div
+              {...getRootProps()}
+              className={`border-2 border-dashed rounded-mobile p-8 text-center cursor-pointer transition-colors mobile-fade-in
+                ${isDragActive ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"}`}
             >
-              <Camera className="mr-2 h-4 w-4" />
-              {isRecording ? "Stop Recording" : "Record from Camera"}
-            </Button>
-          </div>
-          
-          {isRecording && (
-            <div className="relative rounded-lg overflow-hidden">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className="w-full rounded-lg"
-              />
+              <input {...getInputProps()} />
+              <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+              <p className="mt-2 text-sm text-muted-foreground">
+                {isDragActive
+                  ? "Drop your video here..."
+                  : "Drag and drop a video, or click to select"}
+              </p>
             </div>
-          )}
+          ) : null}
+          
+          <div className="flex flex-col space-y-3">
+            {!showCamera && (
+              <Button
+                onClick={startCamera}
+                size="lg"
+                className="h-[var(--mobile-button-height)] text-base font-medium mobile-bounce"
+              >
+                <Camera className="mr-2 h-5 w-5" />
+                Open Camera
+              </Button>
+            )}
+            
+            {showCamera && (
+              <>
+                <div className="relative rounded-mobile overflow-hidden bg-black mobile-slide-up">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full aspect-video object-cover"
+                  />
+                  
+                  {/* Camera controls overlay */}
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-4 px-4">
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="h-12 w-12 rounded-full bg-background/80 backdrop-blur-sm"
+                      onClick={stopCamera}
+                    >
+                      <X className="h-5 w-5" />
+                    </Button>
+                    
+                    <Button
+                      onClick={isRecording ? stopRecording : startRecording}
+                      size="icon"
+                      className={`h-16 w-16 rounded-full ${
+                        isRecording 
+                          ? "bg-destructive hover:bg-destructive/90" 
+                          : "bg-primary hover:bg-primary/90"
+                      }`}
+                    >
+                      {isRecording ? (
+                        <div className="w-6 h-6 bg-white rounded-sm" />
+                      ) : (
+                        <div className="w-6 h-6 bg-white rounded-full" />
+                      )}
+                    </Button>
+                  </div>
+                  
+                  {isRecording && (
+                    <div className="absolute top-4 left-4 bg-destructive text-destructive-foreground px-2 py-1 rounded-full text-xs font-medium animate-pulse">
+                      REC
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </>
       ) : (
-        <div className="relative">
+        <div className="relative rounded-mobile overflow-hidden mobile-fade-in">
           <video
             src={preview}
             controls
-            className="w-full rounded-lg shadow-lg"
+            className="w-full rounded-mobile shadow-lg"
           />
           <Button
             variant="destructive"
             size="icon"
-            className="absolute top-2 right-2"
+            className="absolute top-2 right-2 h-10 w-10 rounded-full bg-destructive/80 backdrop-blur-sm"
             onClick={clearPreview}
           >
             <X className="h-4 w-4" />
