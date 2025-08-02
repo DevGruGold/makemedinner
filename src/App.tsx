@@ -9,12 +9,19 @@ function App() {
   return (
     <Web3Provider>
       <Router>
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen bg-background flex flex-col relative">
+          {/* Mobile-optimized navigation */}
           <MainNav />
-          <main className="flex-grow">
+          
+          {/* Main content area with mobile-first design */}
+          <main className="flex-1 pb-20 sm:pb-6">
             <Index />
           </main>
+          
+          {/* Footer positioned for mobile */}
           <Footer />
+          
+          {/* Toast notifications optimized for mobile */}
           <Toaster />
         </div>
       </Router>

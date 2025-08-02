@@ -12,7 +12,11 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: {
+        DEFAULT: "1rem",
+        sm: "1.5rem",
+        lg: "2rem",
+      },
       screens: {
         "2xl": "1400px",
       },
@@ -71,10 +75,15 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
       },
+      spacing: {
+        'mobile': 'var(--mobile-padding)',
+        'touch': 'var(--touch-target)',
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        'mobile': 'var(--mobile-border-radius)',
       },
       keyframes: {
         "accordion-down": {
@@ -85,6 +94,38 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "mobile-fade-in": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(20px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
+        "mobile-slide-up": {
+          "0%": {
+            transform: "translateY(100%)",
+          },
+          "100%": {
+            transform: "translateY(0)",
+          },
+        },
+        "mobile-bounce": {
+          "0%, 20%, 53%, 80%, 100%": {
+            transform: "translate3d(0,0,0)",
+          },
+          "40%, 43%": {
+            transform: "translate3d(0,-8px,0)",
+          },
+          "70%": {
+            transform: "translate3d(0,-4px,0)",
+          },
+          "90%": {
+            transform: "translate3d(0,-2px,0)",
+          },
+        },
         shimmer: {
           "100%": {
             transform: "translateX(100%)",
@@ -94,7 +135,14 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "mobile-fade-in": "mobile-fade-in 0.4s ease-out",
+        "mobile-slide-up": "mobile-slide-up 0.3s ease-out",
+        "mobile-bounce": "mobile-bounce 0.5s ease-out",
         shimmer: "shimmer 2s infinite",
+      },
+      screens: {
+        'xs': '375px',
+        'mobile': '480px',
       },
     },
   },
