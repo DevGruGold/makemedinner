@@ -1,4 +1,6 @@
-# Welcome to your Lovable project
+# Make Me Dinner - AI Recipe Suggestions
+
+Transform your cooking experience with AI-powered recipe suggestions based on your available ingredients. Make Me Dinner helps you discover delicious meals you can create with what you already have.
 
 ## Project info
 
@@ -52,13 +54,15 @@ npm run dev
 
 ## What technologies are used for this project?
 
-This project is built with .
+This project is built with modern web technologies for optimal performance and user experience:
 
 - Vite
 - TypeScript
 - React
 - shadcn-ui
 - Tailwind CSS
+- Web3Modal & Wagmi (for blockchain integration)
+- Supabase (for backend services)
 
 ## How can I deploy this project?
 
